@@ -12,6 +12,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PAYMENT_DETAILS } from "@/lib/site";
 import { createClient } from "@/lib/supabase";
 
+function formatSavedAddress(address: {
+  address: string;
+  addressLine2?: string | null;
+  landmark?: string | null;
+  city: string;
+  state?: string | null;
+  pinCode: string;
+  country?: string | null;
+}) {
+  return [
+    address.address,
+    address.addressLine2,
+    address.landmark ? `Landmark: ${address.landmark}` : null,
+    [address.city, address.state, address.pinCode].filter(Boolean).join(", "),
+    address.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getTotal, clearCart } = useCart();
@@ -44,8 +64,14 @@ export default function CheckoutPage() {
       const defaultAddress = (payload.profile?.addresses ?? []).find(
         (item: {
           isDefault: boolean;
+          fullName?: string | null;
+          phone?: string | null;
+          country?: string | null;
           address: string;
+          addressLine2?: string | null;
+          landmark?: string | null;
           city: string;
+          state?: string | null;
           pinCode: string;
         }) => item.isDefault,
       );
@@ -54,11 +80,11 @@ export default function CheckoutPage() {
         return;
       }
 
-      setCustomerName(payload.profile?.fullName ?? "");
-      setPhone(payload.profile?.phone ?? "");
-      setAddress(
-        `${defaultAddress.address}, ${defaultAddress.city}, ${defaultAddress.pinCode}`,
+      setCustomerName(
+        defaultAddress.fullName ?? payload.profile?.fullName ?? "",
       );
+      setPhone(defaultAddress.phone ?? payload.profile?.phone ?? "");
+      setAddress(formatSavedAddress(defaultAddress));
       setAutofilled(true);
     }
 

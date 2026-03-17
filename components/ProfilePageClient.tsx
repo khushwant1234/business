@@ -18,17 +18,46 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 
 type Address = {
   id: string;
   label: string;
+  fullName: string | null;
+  phone: string | null;
+  country: string | null;
   address: string;
+  addressLine2: string | null;
+  landmark: string | null;
   city: string;
+  state: string | null;
+  pinCode: string;
+  deliveryInstructions: string | null;
+  isDefault: boolean;
+};
+
+type AddressForm = {
+  country: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  addressLine2: string;
+  landmark: string;
+  city: string;
+  state: string;
   pinCode: string;
   isDefault: boolean;
+  deliveryInstructions: string;
 };
 
 type OrderRow = {
@@ -56,12 +85,72 @@ type Props = {
   orders: OrderRow[];
 };
 
-const EMPTY_ADDRESS = {
-  label: "",
-  address: "",
-  city: "",
-  pinCode: "",
-};
+const DEFAULT_COUNTRY = "India";
+
+const INDIA_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+
+function createEmptyAddressForm(profile: Props["initialProfile"]): AddressForm {
+  return {
+    country: DEFAULT_COUNTRY,
+    fullName: profile?.fullName ?? "",
+    phone: profile?.phone ?? "",
+    address: "",
+    addressLine2: "",
+    landmark: "",
+    city: "",
+    state: "",
+    pinCode: "",
+    isDefault: false,
+    deliveryInstructions: "",
+  };
+}
+
+function formatAddressLines(address: Address) {
+  return [
+    address.address,
+    address.addressLine2,
+    address.landmark ? `Landmark: ${address.landmark}` : null,
+    [address.city, address.state, address.pinCode].filter(Boolean).join(", "),
+    address.country,
+  ].filter(Boolean);
+}
 
 export default function ProfilePageClient({
   email,
@@ -78,7 +167,9 @@ export default function ProfilePageClient({
   const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-  const [addressForm, setAddressForm] = useState(EMPTY_ADDRESS);
+  const [addressForm, setAddressForm] = useState<AddressForm>(() =>
+    createEmptyAddressForm(initialProfile),
+  );
   const [savingAddress, setSavingAddress] = useState(false);
 
   const firstName = (fullName.trim().split(" ")[0] || "there").trim();
@@ -123,19 +214,36 @@ export default function ProfilePageClient({
     });
   }
 
+  function updateAddressForm<Key extends keyof AddressForm>(
+    key: Key,
+    value: AddressForm[Key],
+  ) {
+    setAddressForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
   function openAddAddress() {
     setEditingAddressId(null);
-    setAddressForm(EMPTY_ADDRESS);
+    setAddressForm(createEmptyAddressForm(initialProfile));
     setDialogOpen(true);
   }
 
   function openEditAddress(address: Address) {
     setEditingAddressId(address.id);
     setAddressForm({
-      label: address.label,
+      country: address.country ?? DEFAULT_COUNTRY,
+      fullName: address.fullName ?? initialProfile?.fullName ?? "",
+      phone: address.phone ?? initialProfile?.phone ?? "",
       address: address.address,
+      addressLine2: address.addressLine2 ?? "",
+      landmark: address.landmark ?? "",
       city: address.city,
+      state: address.state ?? "",
       pinCode: address.pinCode,
+      isDefault: address.isDefault,
+      deliveryInstructions: address.deliveryInstructions ?? "",
     });
     setDialogOpen(true);
   }
@@ -177,7 +285,7 @@ export default function ProfilePageClient({
 
     setDialogOpen(false);
     setEditingAddressId(null);
-    setAddressForm(EMPTY_ADDRESS);
+    setAddressForm(createEmptyAddressForm(initialProfile));
 
     toast({
       title: "Saved",
@@ -344,74 +452,202 @@ export default function ProfilePageClient({
                   Add New Address
                 </Button>
               </DialogTrigger>
-              <DialogContent className="rounded-sm" showCloseButton>
+              <DialogContent
+                className="max-h-[85vh] overflow-y-auto rounded-sm sm:max-w-2xl"
+                showCloseButton
+              >
                 <DialogHeader>
                   <DialogTitle>
                     {editingAddressId ? "Edit Address" : "Add Address"}
                   </DialogTitle>
                   <DialogDescription>
-                    Save delivery details for faster checkout.
+                    Save delivery details in checkout-ready format.
                   </DialogDescription>
                 </DialogHeader>
-                <form className="space-y-3" onSubmit={submitAddress}>
+                <form className="space-y-4" onSubmit={submitAddress}>
                   <div className="space-y-2">
-                    <Label htmlFor="address-label">Label</Label>
-                    <Input
-                      id="address-label"
-                      value={addressForm.label}
-                      onChange={(event) =>
-                        setAddressForm((current) => ({
-                          ...current,
-                          label: event.target.value,
-                        }))
+                    <Label htmlFor="address-country">Country/Region</Label>
+                    <Select
+                      value={addressForm.country}
+                      onValueChange={(value) =>
+                        updateAddressForm("country", value)
                       }
+                    >
+                      <SelectTrigger
+                        id="address-country"
+                        className="h-11 w-full rounded-sm"
+                      >
+                        <SelectValue placeholder="Choose a country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="India">India</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address-full-name">
+                      Full name (First and Last name)
+                    </Label>
+                    <Input
+                      id="address-full-name"
+                      value={addressForm.fullName}
+                      onChange={(event) =>
+                        updateAddressForm("fullName", event.target.value)
+                      }
+                      className="rounded-sm"
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="address-full">Full Address</Label>
+                    <Label htmlFor="address-phone">Mobile number</Label>
                     <Input
-                      id="address-full"
-                      value={addressForm.address}
+                      id="address-phone"
+                      type="tel"
+                      inputMode="tel"
+                      value={addressForm.phone}
                       onChange={(event) =>
-                        setAddressForm((current) => ({
-                          ...current,
-                          address: event.target.value,
-                        }))
+                        updateAddressForm("phone", event.target.value)
                       }
+                      className="rounded-sm"
                       required
                     />
+                    <p className="text-xs text-muted-foreground">
+                      May be used to assist delivery
+                    </p>
                   </div>
+
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="address-city">City</Label>
-                      <Input
-                        id="address-city"
-                        value={addressForm.city}
-                        onChange={(event) =>
-                          setAddressForm((current) => ({
-                            ...current,
-                            city: event.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address-pin">PIN Code</Label>
+                      <Label htmlFor="address-pin">Pincode</Label>
                       <Input
                         id="address-pin"
                         value={addressForm.pinCode}
                         onChange={(event) =>
-                          setAddressForm((current) => ({
-                            ...current,
-                            pinCode: event.target.value,
-                          }))
+                          updateAddressForm(
+                            "pinCode",
+                            event.target.value.replace(/\D/g, "").slice(0, 6),
+                          )
                         }
+                        className="rounded-sm"
+                        inputMode="numeric"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        placeholder="6 digits [0-9] PIN code"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address-line-1">
+                        Flat, House no., Building, Company, Apartment
+                      </Label>
+                      <Input
+                        id="address-line-1"
+                        value={addressForm.address}
+                        onChange={(event) =>
+                          updateAddressForm("address", event.target.value)
+                        }
+                        className="rounded-sm"
                         required
                       />
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address-line-2">
+                      Area, Street, Sector, Village
+                    </Label>
+                    <Input
+                      id="address-line-2"
+                      value={addressForm.addressLine2}
+                      onChange={(event) =>
+                        updateAddressForm("addressLine2", event.target.value)
+                      }
+                      className="rounded-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address-landmark">Landmark</Label>
+                    <Input
+                      id="address-landmark"
+                      value={addressForm.landmark}
+                      onChange={(event) =>
+                        updateAddressForm("landmark", event.target.value)
+                      }
+                      className="rounded-sm"
+                      placeholder="E.g. near apollo hospital"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="address-city">Town/City</Label>
+                      <Input
+                        id="address-city"
+                        value={addressForm.city}
+                        onChange={(event) =>
+                          updateAddressForm("city", event.target.value)
+                        }
+                        className="rounded-sm"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address-state">State</Label>
+                      <Select
+                        value={addressForm.state}
+                        onValueChange={(value) =>
+                          updateAddressForm("state", value)
+                        }
+                      >
+                        <SelectTrigger
+                          id="address-state"
+                          className="h-11 w-full rounded-sm"
+                        >
+                          <SelectValue placeholder="Choose a state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIA_STATES.map((state) => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={addressForm.isDefault}
+                      onChange={(event) =>
+                        updateAddressForm("isDefault", event.target.checked)
+                      }
+                    />
+                    <span>Make this my default address</span>
+                  </label>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address-instructions">
+                      Delivery instructions (optional)
+                    </Label>
+                    <Textarea
+                      id="address-instructions"
+                      value={addressForm.deliveryInstructions}
+                      onChange={(event) =>
+                        updateAddressForm(
+                          "deliveryInstructions",
+                          event.target.value,
+                        )
+                      }
+                      className="rounded-sm"
+                      placeholder="Add preferences, notes, access codes and more"
+                    />
+                  </div>
+
                   <DialogFooter className="p-0">
                     <Button
                       type="submit"
@@ -434,17 +670,33 @@ export default function ProfilePageClient({
               >
                 <CardContent className="space-y-3 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-base font-medium">{item.label}</p>
+                    <div>
+                      <p className="text-base font-medium">
+                        {item.fullName || item.label}
+                      </p>
+                      {item.phone ? (
+                        <p className="text-sm text-muted-foreground">
+                          {item.phone}
+                        </p>
+                      ) : null}
+                    </div>
                     {item.isDefault ? (
                       <Badge variant="outline">Default</Badge>
                     ) : null}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {item.address}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.city}, {item.pinCode}
-                  </p>
+                  {formatAddressLines(item).map((line) => (
+                    <p
+                      key={`${item.id}-${line}`}
+                      className="text-sm text-muted-foreground"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                  {item.deliveryInstructions ? (
+                    <p className="text-sm text-muted-foreground">
+                      Instructions: {item.deliveryInstructions}
+                    </p>
+                  ) : null}
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"

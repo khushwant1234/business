@@ -3,6 +3,47 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
+function getRequiredString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getOptionalString(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function validateAddress(data: {
+  country: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+}) {
+  if (
+    !data.country ||
+    !data.fullName ||
+    !data.phone ||
+    !data.address ||
+    !data.city ||
+    !data.state ||
+    !data.pinCode
+  ) {
+    return "All required fields must be filled.";
+  }
+
+  if (!/^\d{6}$/.test(data.pinCode)) {
+    return "PIN code must be 6 digits.";
+  }
+
+  return null;
+}
+
 async function getProfileIdForUser() {
   const db = prisma as any;
   const supabase = await createServerSupabaseClient();
@@ -54,14 +95,31 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const label = String(body.label ?? "").trim();
-    const address = String(body.address ?? "").trim();
-    const city = String(body.city ?? "").trim();
-    const pinCode = String(body.pinCode ?? "").trim();
+    const country = getRequiredString(body.country) || "India";
+    const fullName = getRequiredString(body.fullName);
+    const phone = getRequiredString(body.phone);
+    const address = getRequiredString(body.address);
+    const addressLine2 = getOptionalString(body.addressLine2);
+    const landmark = getOptionalString(body.landmark);
+    const city = getRequiredString(body.city);
+    const state = getRequiredString(body.state);
+    const pinCode = getRequiredString(body.pinCode);
+    const deliveryInstructions = getOptionalString(body.deliveryInstructions);
     const isDefault = Boolean(body.isDefault);
+    const label = fullName || `${city} Address`;
 
-    if (!label || !address || !city || !pinCode) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    const validationError = validateAddress({
+      country,
+      fullName,
+      phone,
+      address,
+      city,
+      state,
+      pinCode,
+    });
+
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     const created = await db.$transaction(async (tx: any) => {
@@ -76,9 +134,16 @@ export async function POST(request: Request) {
         data: {
           profileId,
           label,
+          fullName,
+          phone,
+          country,
           address,
+          addressLine2,
+          landmark,
           city,
+          state,
           pinCode,
+          deliveryInstructions,
           isDefault,
         },
       });

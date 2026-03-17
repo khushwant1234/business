@@ -3,6 +3,51 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
+function getRequiredString(value: unknown, fallback = "") {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  return value.trim();
+}
+
+function getOptionalString(value: unknown, fallback: string | null = null) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function validateAddress(data: {
+  country: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+}) {
+  if (
+    !data.country ||
+    !data.fullName ||
+    !data.phone ||
+    !data.address ||
+    !data.city ||
+    !data.state ||
+    !data.pinCode
+  ) {
+    return "All required fields must be filled.";
+  }
+
+  if (!/^\d{6}$/.test(data.pinCode)) {
+    return "PIN code must be 6 digits.";
+  }
+
+  return null;
+}
+
 async function getProfileIdForUser() {
   const db = prisma as any;
   const supabase = await createServerSupabaseClient();
@@ -37,10 +82,18 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const label = typeof body.label === "string" ? body.label.trim() : undefined;
-    const address = typeof body.address === "string" ? body.address.trim() : undefined;
-    const city = typeof body.city === "string" ? body.city.trim() : undefined;
-    const pinCode = typeof body.pinCode === "string" ? body.pinCode.trim() : undefined;
+    const hasAddressPayload = [
+      "country",
+      "fullName",
+      "phone",
+      "address",
+      "addressLine2",
+      "landmark",
+      "city",
+      "state",
+      "pinCode",
+      "deliveryInstructions",
+    ].some((key) => key in body);
     const isDefault = typeof body.isDefault === "boolean" ? body.isDefault : undefined;
 
     const existing = await db.deliveryAddress.findFirst({
@@ -59,21 +112,66 @@ export async function PATCH(
         });
       }
 
-      return tx.deliveryAddress.update({
-        where: { id },
-        data: {
-          label,
+      let data: Record<string, string | boolean | null | undefined> = {
+        isDefault,
+      };
+
+      if (hasAddressPayload) {
+        const country = getRequiredString(body.country, existing.country ?? "India") || "India";
+        const fullName = getRequiredString(body.fullName, existing.fullName ?? "");
+        const phone = getRequiredString(body.phone, existing.phone ?? "");
+        const address = getRequiredString(body.address, existing.address ?? "");
+        const addressLine2 = getOptionalString(body.addressLine2, existing.addressLine2 ?? null);
+        const landmark = getOptionalString(body.landmark, existing.landmark ?? null);
+        const city = getRequiredString(body.city, existing.city ?? "");
+        const state = getRequiredString(body.state, existing.state ?? "");
+        const pinCode = getRequiredString(body.pinCode, existing.pinCode ?? "");
+        const deliveryInstructions = getOptionalString(
+          body.deliveryInstructions,
+          existing.deliveryInstructions ?? null,
+        );
+        const validationError = validateAddress({
+          country,
+          fullName,
+          phone,
           address,
           city,
+          state,
           pinCode,
-          isDefault,
-        },
+        });
+
+        if (validationError) {
+          throw new Error(validationError);
+        }
+
+        data = {
+          ...data,
+          label: fullName || existing.label || `${city} Address`,
+          country,
+          fullName,
+          phone,
+          address,
+          addressLine2,
+          landmark,
+          city,
+          state,
+          pinCode,
+          deliveryInstructions,
+        };
+      }
+
+      return tx.deliveryAddress.update({
+        where: { id },
+        data,
       });
     });
 
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Failed to update address:", error);
+    if (error instanceof Error && error.message) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Failed to update address" }, { status: 500 });
   }
 }
