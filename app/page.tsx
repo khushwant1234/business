@@ -49,7 +49,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/products"
-                  className="text-white transition-opacity hover:opacity-75"
+                  className="text-foreground transition-opacity hover:opacity-75"
                 >
                   View category
                 </Link>

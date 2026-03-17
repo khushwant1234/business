@@ -85,7 +85,9 @@ export default function CartPage() {
             <CardContent className="space-y-4 p-4 text-sm text-white/70">
               <p>Your cart is empty.</p>
               <Button asChild className="w-fit rounded-sm">
-                <Link href="/products">Browse products</Link>
+                <Link href="/products" className="text-background">
+                  Browse products
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -111,7 +113,9 @@ export default function CartPage() {
               className="w-full rounded-sm"
               disabled={!items.length}
             >
-              <Link href="/checkout">Proceed to Checkout</Link>
+              <Link href="/checkout" className="text-background">
+                Proceed to Checkout
+              </Link>
             </Button>
           </CardContent>
         </Card>
