@@ -29,10 +29,10 @@ export default function CartPage() {
             {items.map((item) => (
               <Card
                 key={item.id}
-                className="rounded-sm border border-white/10 bg-[#202020] py-0"
+                className="rounded-sm border border-white/10 bg-card py-0"
               >
                 <CardContent className="grid gap-4 p-4 md:grid-cols-[96px_minmax(0,1fr)_140px] md:items-center">
-                  <div className="relative aspect-square overflow-hidden rounded-sm border border-white/10 bg-[#181818]">
+                  <div className="relative aspect-square overflow-hidden rounded-sm border border-white/10 bg-muted">
                     <Image
                       src={getProductImage(item.imageUrl)}
                       alt={item.name}
@@ -81,7 +81,7 @@ export default function CartPage() {
             ))}
           </div>
         ) : (
-          <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+          <Card className="rounded-sm border border-white/10 bg-card py-0">
             <CardContent className="space-y-4 p-4 text-sm text-white/70">
               <p>Your cart is empty.</p>
               <Button asChild className="w-fit rounded-sm">
@@ -93,7 +93,7 @@ export default function CartPage() {
       </section>
 
       <aside>
-        <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+        <Card className="rounded-sm border border-white/10 bg-card py-0">
           <CardHeader className="border-b border-white/10 py-4">
             <CardTitle>Order summary</CardTitle>
           </CardHeader>

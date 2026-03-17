@@ -96,7 +96,7 @@ export default function RequestPage() {
         </p>
       </div>
 
-      <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+      <Card className="rounded-sm border border-white/10 bg-card py-0">
         <CardHeader className="border-b border-white/10 py-4">
           <CardTitle>Requirement form</CardTitle>
         </CardHeader>

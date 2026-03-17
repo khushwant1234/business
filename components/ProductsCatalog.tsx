@@ -40,7 +40,7 @@ export default function ProductsCatalog({
             <TabsTrigger
               key={category}
               value={category}
-              className="rounded-sm border border-white/10 px-3 py-2 text-sm data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-[#202020]"
+              className="rounded-sm border border-white/10 px-3 py-2 text-sm data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-background"
             >
               {category}
             </TabsTrigger>

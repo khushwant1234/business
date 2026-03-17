@@ -37,7 +37,7 @@ export default function Home() {
           {PRODUCT_CATEGORIES.map((category) => (
             <Card
               key={category}
-              className="rounded-sm border border-white/10 bg-[#202020] py-0"
+              className="rounded-sm border border-white/10 bg-card py-0"
             >
               <CardHeader className="border-b border-white/10 py-4">
                 <CardTitle>{category}</CardTitle>

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { CartProvider } from "@/components/CartContext";
+import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 import { BRAND_NAME } from "@/lib/site";
 
 import "./globals.css";
@@ -23,14 +26,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} bg-background font-sans antialiased`}>
-        <CartProvider>
-          <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
-            <main>{children}</main>
-          </div>
-        </CartProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <CartProvider>
+            <div className="flex min-h-screen flex-col bg-background text-foreground">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            <Toaster />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

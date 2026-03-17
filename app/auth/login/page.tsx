@@ -42,7 +42,7 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md rounded-sm border border-white/10 bg-[#202020] py-0">
+      <Card className="w-full max-w-md rounded-sm border border-white/10 bg-card py-0">
         <CardHeader className="border-b border-white/10 py-4">
           <CardTitle>Login</CardTitle>
         </CardHeader>

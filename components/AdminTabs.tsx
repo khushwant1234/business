@@ -176,19 +176,19 @@ export default function AdminTabs({
       >
         <TabsTrigger
           value="products"
-          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-[#202020]"
+          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-background"
         >
           Products
         </TabsTrigger>
         <TabsTrigger
           value="orders"
-          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-[#202020]"
+          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-background"
         >
           Orders
         </TabsTrigger>
         <TabsTrigger
           value="requests"
-          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-[#202020]"
+          className="rounded-sm border border-white/10 px-3 py-2 data-[state=active]:border-white data-[state=active]:bg-white data-[state=active]:text-background"
         >
           Requests
         </TabsTrigger>
@@ -197,7 +197,7 @@ export default function AdminTabs({
       {message ? <p className="text-sm text-white/70">{message}</p> : null}
 
       <TabsContent value="products" className="space-y-6">
-        <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+        <Card className="rounded-sm border border-white/10 bg-card py-0">
           <CardHeader className="border-b border-white/10 py-4">
             <CardTitle>Add product</CardTitle>
           </CardHeader>
@@ -293,7 +293,7 @@ export default function AdminTabs({
           </CardContent>
         </Card>
 
-        <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+        <Card className="rounded-sm border border-white/10 bg-card py-0">
           <CardHeader className="border-b border-white/10 py-4">
             <CardTitle>Current products</CardTitle>
           </CardHeader>
@@ -336,7 +336,7 @@ export default function AdminTabs({
       </TabsContent>
 
       <TabsContent value="orders">
-        <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+        <Card className="rounded-sm border border-white/10 bg-card py-0">
           <CardHeader className="border-b border-white/10 py-4">
             <CardTitle>Orders</CardTitle>
           </CardHeader>
@@ -407,7 +407,7 @@ export default function AdminTabs({
           {requests.map((request) => (
             <Card
               key={request.id}
-              className="rounded-sm border border-white/10 bg-[#202020] py-0"
+              className="rounded-sm border border-white/10 bg-card py-0"
             >
               <CardHeader className="border-b border-white/10 py-4">
                 <CardTitle>{request.productName}</CardTitle>

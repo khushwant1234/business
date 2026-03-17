@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 import { BRAND_NAME } from "@/lib/site";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const { itemCount } = useCart();
@@ -44,29 +45,38 @@ export default function Navbar() {
     <>
       <Link
         href="/"
-        className="text-white/70 transition-opacity hover:text-white text-sm"
+        className="text-muted-foreground transition-colors hover:text-foreground text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Home
       </Link>
       <Link
         href="/products"
-        className="text-white/70 transition-opacity hover:text-white text-sm"
+        className="text-muted-foreground transition-colors hover:text-foreground text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Products
       </Link>
       <Link
         href="/request"
-        className="text-white/70 transition-opacity hover:text-white text-sm"
+        className="text-muted-foreground transition-colors hover:text-foreground text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Request Part
       </Link>
+      {user ? (
+        <Link
+          href="/profile"
+          className="text-muted-foreground transition-colors hover:text-foreground text-sm"
+          onClick={() => setMenuOpen(false)}
+        >
+          Profile
+        </Link>
+      ) : null}
       {isAdmin && (
         <Link
           href="/admin"
-          className="text-white/70 transition-opacity hover:text-white text-sm"
+          className="text-muted-foreground transition-colors hover:text-foreground text-sm"
           onClick={() => setMenuOpen(false)}
         >
           Admin
@@ -76,11 +86,11 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#202020]">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link
           href="/"
-          className="text-lg font-semibold tracking-tight text-white"
+          className="text-lg font-semibold tracking-tight text-foreground"
         >
           {BRAND_NAME}
         </Link>
@@ -88,13 +98,14 @@ export default function Navbar() {
         <div className="hidden items-center gap-6 md:flex">{navLinks}</div>
 
         <div className="hidden items-center gap-4 md:flex">
+          <ThemeToggle />
           <Link
             href="/cart"
-            className="relative text-white/70 transition-opacity hover:text-white"
+            className="relative text-muted-foreground transition-colors hover:text-foreground"
           >
             <ShoppingCart size={20} />
             {itemCount > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-white text-[10px] font-bold text-[#202020]">
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-foreground text-[10px] font-bold text-background">
                 {itemCount}
               </span>
             )}
@@ -104,7 +115,7 @@ export default function Navbar() {
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="rounded-sm text-sm text-white/70 hover:text-white"
+              className="rounded-sm text-sm text-muted-foreground hover:text-foreground"
             >
               Logout
             </Button>
@@ -113,7 +124,7 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-sm text-sm text-white/70 hover:text-white"
+                className="rounded-sm text-sm text-muted-foreground hover:text-foreground"
               >
                 Login
               </Button>
@@ -121,21 +132,22 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-3 md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <Link
             href="/cart"
-            className="relative text-white/70 transition-opacity hover:text-white"
+            className="relative text-muted-foreground transition-colors hover:text-foreground"
           >
             <ShoppingCart size={20} />
             {itemCount > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-white text-[10px] font-bold text-[#202020]">
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-foreground text-[10px] font-bold text-background">
                 {itemCount}
               </span>
             )}
           </Link>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-white/70 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
           >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -143,7 +155,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <div className="flex flex-col gap-3 border-t border-white/10 px-4 py-4 md:hidden">
+        <div className="flex flex-col gap-3 border-t border-border px-4 py-4 md:hidden">
           {navLinks}
           {user ? (
             <button
@@ -151,14 +163,14 @@ export default function Navbar() {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="text-left text-sm text-white/70 hover:text-white"
+              className="text-left text-sm text-muted-foreground hover:text-foreground"
             >
               Logout
             </button>
           ) : (
             <Link
               href="/auth/login"
-              className="text-sm text-white/70 hover:text-white"
+              className="text-sm text-muted-foreground hover:text-foreground"
               onClick={() => setMenuOpen(false)}
             >
               Login

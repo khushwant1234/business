@@ -6,6 +6,11 @@ import { PAYMENT_STATUSES } from "@/lib/site";
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const body = await request.json();
     const { customerName, phone, address, deliveryType, items } = body;
 
@@ -23,6 +28,7 @@ export async function POST(request: Request) {
 
     const order = await prisma.order.create({
       data: {
+        userId: user?.id,
         customerName,
         phone,
         address,

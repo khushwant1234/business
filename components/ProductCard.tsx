@@ -25,9 +25,9 @@ export default function ProductCard({
   const { addToCart } = useCart();
 
   return (
-    <Card className="group overflow-hidden rounded-sm border border-white/10 bg-[#202020] py-0">
+    <Card className="group overflow-hidden rounded-sm border border-white/10 bg-card py-0">
       <Link href={`/products/${id}`}>
-        <div className="relative aspect-square bg-[#1a1a1a]">
+        <div className="relative aspect-square bg-muted">
           <Image
             src={getProductImage(imageUrl)}
             alt={name}
@@ -53,7 +53,7 @@ export default function ProductCard({
           <Button
             size="sm"
             variant="outline"
-            className="rounded-sm border-white/20 bg-transparent text-xs text-white hover:bg-white hover:text-[#202020]"
+            className="rounded-sm border-white/20 bg-transparent text-xs text-white hover:bg-white hover:text-background"
             onClick={() => addToCart({ id, name, price, imageUrl, category })}
           >
             Add to Cart

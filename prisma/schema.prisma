@@ -19,6 +19,7 @@ model Product {
 
 model Order {
   id            String      @id @default(cuid())
+  userId        String?
   customerName  String
   phone         String
   address       String
@@ -45,4 +46,26 @@ model ProductRequest {
   reason      String
   contact     String
   createdAt   DateTime @default(now())
+}
+
+model Profile {
+  id        String            @id @default(cuid())
+  userId    String            @unique
+  fullName  String?
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  addresses DeliveryAddress[]
+}
+
+model DeliveryAddress {
+  id        String   @id @default(cuid())
+  profileId String
+  label     String
+  address   String
+  city      String
+  pinCode   String
+  isDefault Boolean  @default(false)
+  profile   Profile  @relation(fields: [profileId], references: [id])
 }

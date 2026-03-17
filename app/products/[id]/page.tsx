@@ -25,7 +25,7 @@ export default async function ProductDetailPage({
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 md:grid-cols-[minmax(0,1fr)_420px] md:px-6 md:py-16">
       <div className="space-y-6">
-        <div className="relative aspect-square overflow-hidden rounded-sm border border-white/10 bg-[#181818]">
+        <div className="relative aspect-square overflow-hidden rounded-sm border border-white/10 bg-muted">
           <Image
             src={getProductImage(product.imageUrl)}
             alt={product.name}
@@ -63,7 +63,7 @@ export default async function ProductDetailPage({
           }}
         />
 
-        <Card className="rounded-sm border border-white/10 bg-[#202020] py-0">
+        <Card className="rounded-sm border border-white/10 bg-card py-0">
           <CardHeader className="border-b border-white/10 py-4">
             <CardTitle>Payment details</CardTitle>
           </CardHeader>
