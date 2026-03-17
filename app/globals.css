@@ -139,9 +139,11 @@ body {
   html {
     @apply font-sans;
   }
+  a {
+    @apply no-underline;
+  }
 }
 
 a {
-  color: inherit;
   text-decoration: none;
 }
