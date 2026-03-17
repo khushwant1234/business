@@ -202,7 +202,7 @@ export default function CheckoutPage() {
               ) : null}
               <Button
                 type="submit"
-                className="rounded-sm"
+                className="rounded-sm text-background"
                 disabled={submitting || !items.length}
               >
                 Place Order

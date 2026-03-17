@@ -19,7 +19,7 @@ export default function Home() {
           electronic parts through a minimal storefront built for technical
           buyers.
         </p>
-        <Button asChild className="rounded-sm px-4">
+        <Button asChild className="rounded-sm px-4 text-background">
           <Link href="/products">Browse Parts</Link>
         </Button>
       </section>
