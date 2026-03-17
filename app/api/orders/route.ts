@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { PAYMENT_STATUSES } from "@/lib/site";
 
 export async function POST(request: Request) {
   try {
@@ -10,12 +13,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!["EXPRESS", "NORMAL"].includes(deliveryType)) {
+      return NextResponse.json({ error: "Invalid delivery type" }, { status: 400 });
+    }
+
+    if (!Array.isArray(items) || items.some((item) => !item.productId || item.quantity < 1)) {
+      return NextResponse.json({ error: "Invalid order items" }, { status: 400 });
+    }
+
     const order = await prisma.order.create({
       data: {
         customerName,
         phone,
         address,
         deliveryType,
+        paymentStatus: PAYMENT_STATUSES[0],
         items: {
           create: items.map((item: { productId: string; quantity: number }) => ({
             productId: item.productId,
@@ -35,6 +47,15 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || !isAdminEmail(user.email)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const orders = await prisma.order.findMany({
       include: {
         items: {

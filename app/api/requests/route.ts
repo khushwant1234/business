@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +25,15 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || !isAdminEmail(user.email)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const requests = await prisma.productRequest.findMany({
       orderBy: { createdAt: "desc" },
     });

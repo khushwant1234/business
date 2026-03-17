@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user || user.email !== process.env.ADMIN_EMAIL) {
+    if (!user || !isAdminEmail(user.email)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,8 +31,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (Number.isNaN(Number(price)) || Number(price) < 0) {
+      return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+    }
+
     const product = await prisma.product.create({
-      data: { name, category, description, price: parseFloat(price), imageUrl },
+      data: {
+        name,
+        category,
+        description,
+        price: Number(price),
+        imageUrl: imageUrl || null,
+      },
     });
 
     return NextResponse.json(product, { status: 201 });

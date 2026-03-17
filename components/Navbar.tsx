@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { useCart } from "./CartContext";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
+import { BRAND_NAME } from "@/lib/site";
 
 export default function Navbar() {
   const { itemCount } = useCart();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const supabase = createClient();
+  const [supabase] = useState(createClient);
+  const router = useRouter();
 
   const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -33,28 +36,29 @@ export default function Navbar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    window.location.href = "/";
+    router.push("/");
+    router.refresh();
   };
 
   const navLinks = (
     <>
       <Link
         href="/"
-        className="text-white/70 hover:text-white transition-opacity text-sm"
+        className="text-white/70 transition-opacity hover:text-white text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Home
       </Link>
       <Link
         href="/products"
-        className="text-white/70 hover:text-white transition-opacity text-sm"
+        className="text-white/70 transition-opacity hover:text-white text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Products
       </Link>
       <Link
         href="/request"
-        className="text-white/70 hover:text-white transition-opacity text-sm"
+        className="text-white/70 transition-opacity hover:text-white text-sm"
         onClick={() => setMenuOpen(false)}
       >
         Request Part
@@ -62,7 +66,7 @@ export default function Navbar() {
       {isAdmin && (
         <Link
           href="/admin"
-          className="text-white/70 hover:text-white transition-opacity text-sm"
+          className="text-white/70 transition-opacity hover:text-white text-sm"
           onClick={() => setMenuOpen(false)}
         >
           Admin
@@ -72,22 +76,25 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="border-b border-white/10 bg-[#202020] sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="text-white font-semibold tracking-tight text-lg">
-          [BRAND_NAME]
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#202020]">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        <Link
+          href="/"
+          className="text-lg font-semibold tracking-tight text-white"
+        >
+          {BRAND_NAME}
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks}
-        </div>
+        <div className="hidden items-center gap-6 md:flex">{navLinks}</div>
 
-        <div className="hidden md:flex items-center gap-4">
-          <Link href="/cart" className="relative text-white/70 hover:text-white transition-opacity">
+        <div className="hidden items-center gap-4 md:flex">
+          <Link
+            href="/cart"
+            className="relative text-white/70 transition-opacity hover:text-white"
+          >
             <ShoppingCart size={20} />
             {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-[#202020] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-white text-[10px] font-bold text-[#202020]">
                 {itemCount}
               </span>
             )}
@@ -97,25 +104,31 @@ export default function Navbar() {
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="text-white/70 hover:text-white text-sm"
+              className="rounded-sm text-sm text-white/70 hover:text-white"
             >
               Logout
             </Button>
           ) : (
             <Link href="/auth/login">
-              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white text-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-sm text-sm text-white/70 hover:text-white"
+              >
                 Login
               </Button>
             </Link>
           )}
         </div>
 
-        {/* Mobile */}
         <div className="flex items-center gap-3 md:hidden">
-          <Link href="/cart" className="relative text-white/70 hover:text-white transition-opacity">
+          <Link
+            href="/cart"
+            className="relative text-white/70 transition-opacity hover:text-white"
+          >
             <ShoppingCart size={20} />
             {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-[#202020] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-sm bg-white text-[10px] font-bold text-[#202020]">
                 {itemCount}
               </span>
             )}
@@ -129,9 +142,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-white/10 px-4 py-4 flex flex-col gap-3">
+        <div className="flex flex-col gap-3 border-t border-white/10 px-4 py-4 md:hidden">
           {navLinks}
           {user ? (
             <button
@@ -139,14 +151,14 @@ export default function Navbar() {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="text-white/70 hover:text-white text-sm text-left"
+              className="text-left text-sm text-white/70 hover:text-white"
             >
               Logout
             </button>
           ) : (
             <Link
               href="/auth/login"
-              className="text-white/70 hover:text-white text-sm"
+              className="text-sm text-white/70 hover:text-white"
               onClick={() => setMenuOpen(false)}
             >
               Login
