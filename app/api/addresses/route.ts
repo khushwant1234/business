@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -45,7 +46,6 @@ function validateAddress(data: {
 }
 
 async function getProfileIdForUser() {
-  const db = prisma as any;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -55,7 +55,7 @@ async function getProfileIdForUser() {
     return null;
   }
 
-  const profile = await db.profile.upsert({
+  const profile = await prisma.profile.upsert({
     where: { userId: user.id },
     update: {},
     create: { userId: user.id },
@@ -66,14 +66,13 @@ async function getProfileIdForUser() {
 
 export async function GET() {
   try {
-    const db = prisma as any;
     const profileId = await getProfileIdForUser();
 
     if (!profileId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const addresses = await db.deliveryAddress.findMany({
+    const addresses = await prisma.deliveryAddress.findMany({
       where: { profileId },
       orderBy: [{ isDefault: "desc" }, { id: "desc" }],
     });
@@ -87,7 +86,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const db = prisma as any;
     const profileId = await getProfileIdForUser();
 
     if (!profileId) {
@@ -122,7 +120,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const created = await db.$transaction(async (tx: any) => {
+    const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (isDefault) {
         await tx.deliveryAddress.updateMany({
           where: { profileId, isDefault: true },

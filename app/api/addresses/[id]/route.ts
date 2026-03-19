@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -49,7 +50,6 @@ function validateAddress(data: {
 }
 
 async function getProfileIdForUser() {
-  const db = prisma as any;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -59,7 +59,7 @@ async function getProfileIdForUser() {
     return null;
   }
 
-  const profile = await db.profile.findUnique({
+  const profile = await prisma.profile.findUnique({
     where: { userId: user.id },
     select: { id: true },
   });
@@ -72,7 +72,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const db = prisma as any;
     const profileId = await getProfileIdForUser();
 
     if (!profileId) {
@@ -96,7 +95,7 @@ export async function PATCH(
     ].some((key) => key in body);
     const isDefault = typeof body.isDefault === "boolean" ? body.isDefault : undefined;
 
-    const existing = await db.deliveryAddress.findFirst({
+    const existing = await prisma.deliveryAddress.findFirst({
       where: { id, profileId },
     });
 
@@ -104,7 +103,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Address not found" }, { status: 404 });
     }
 
-    const updated = await db.$transaction(async (tx: any) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (isDefault) {
         await tx.deliveryAddress.updateMany({
           where: { profileId, isDefault: true },
@@ -117,19 +116,16 @@ export async function PATCH(
       };
 
       if (hasAddressPayload) {
-        const country = getRequiredString(body.country, existing.country ?? "India") || "India";
-        const fullName = getRequiredString(body.fullName, existing.fullName ?? "");
-        const phone = getRequiredString(body.phone, existing.phone ?? "");
-        const address = getRequiredString(body.address, existing.address ?? "");
-        const addressLine2 = getOptionalString(body.addressLine2, existing.addressLine2 ?? null);
-        const landmark = getOptionalString(body.landmark, existing.landmark ?? null);
-        const city = getRequiredString(body.city, existing.city ?? "");
-        const state = getRequiredString(body.state, existing.state ?? "");
-        const pinCode = getRequiredString(body.pinCode, existing.pinCode ?? "");
-        const deliveryInstructions = getOptionalString(
-          body.deliveryInstructions,
-          existing.deliveryInstructions ?? null,
-        );
+        const country = getRequiredString(body.country, "India") || "India";
+        const fullName = getRequiredString(body.fullName, "");
+        const phone = getRequiredString(body.phone, "");
+        const address = getRequiredString(body.address, existing.address);
+        const addressLine2 = getOptionalString(body.addressLine2, null);
+        const landmark = getOptionalString(body.landmark, null);
+        const city = getRequiredString(body.city, existing.city);
+        const state = getRequiredString(body.state, "");
+        const pinCode = getRequiredString(body.pinCode, existing.pinCode);
+        const deliveryInstructions = getOptionalString(body.deliveryInstructions, null);
         const validationError = validateAddress({
           country,
           fullName,
@@ -181,7 +177,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const db = prisma as any;
     const profileId = await getProfileIdForUser();
 
     if (!profileId) {
@@ -190,7 +185,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const existing = await db.deliveryAddress.findFirst({
+    const existing = await prisma.deliveryAddress.findFirst({
       where: { id, profileId },
     });
 
@@ -198,7 +193,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Address not found" }, { status: 404 });
     }
 
-    await db.deliveryAddress.delete({ where: { id } });
+    await prisma.deliveryAddress.delete({ where: { id } });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

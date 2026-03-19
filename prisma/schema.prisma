@@ -7,26 +7,39 @@ datasource db {
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  category    String
-  description String
-  price       Float
-  imageUrl    String?
-  createdAt   DateTime    @default(now())
-  orders      OrderItem[]
+  id              String      @id @default(cuid())
+  name            String
+  category        String
+  description     String
+  price           Float
+  imageUrl        String?
+  sku             String?
+  isInStock       Boolean     @default(true)
+  highlights      Json?
+  features        Json?
+  packageIncludes Json?
+  specifications  Json?
+  attachments     Json?
+  videoUrl        String?
+  qna             Json?
+  otherInfo       Json?
+  brand           String?
+  tags            Json?
+  createdAt       DateTime    @default(now())
+  orders          OrderItem[]
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  userId        String?
-  customerName  String
-  phone         String
-  address       String
-  deliveryType  String
-  paymentStatus String      @default("PENDING")
-  createdAt     DateTime    @default(now())
-  items         OrderItem[]
+  id             String      @id @default(cuid())
+  userId         String?
+  customerName   String
+  phone          String
+  address        String
+  deliveryType   String
+  paymentStatus  String      @default("PENDING")
+  deliveryStatus String      @default("PROCESSING")
+  createdAt      DateTime    @default(now())
+  items          OrderItem[]
 }
 
 model OrderItem {

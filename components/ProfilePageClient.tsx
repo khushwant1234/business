@@ -65,6 +65,7 @@ type OrderRow = {
   createdAt: string;
   deliveryType: string;
   paymentStatus: string;
+  deliveryStatus: string;
   items: Array<{
     id: string;
     quantity: number;
@@ -748,7 +749,20 @@ export default function ProfilePageClient({
                     <p className="text-sm font-medium">
                       Order {order.id.slice(0, 8)}...
                     </p>
-                    <Badge variant="outline">{order.paymentStatus}</Badge>
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                          Payment
+                        </p>
+                        <Badge variant="outline">{order.paymentStatus}</Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                          Delivery
+                        </p>
+                        <Badge variant="outline">{order.deliveryStatus}</Badge>
+                      </div>
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Date placed: {new Date(order.createdAt).toLocaleString()}

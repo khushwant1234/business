@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { PAYMENT_STATUSES } from "@/lib/site";
+import { DELIVERY_STATUSES, PAYMENT_STATUSES } from "@/lib/site";
 
 export async function PATCH(
   request: Request,
@@ -18,15 +18,35 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { paymentStatus } = body;
+    const { paymentStatus, deliveryStatus } = body;
 
-    if (!PAYMENT_STATUSES.includes(paymentStatus)) {
-      return NextResponse.json({ error: "Invalid payment status" }, { status: 400 });
+    if (!paymentStatus && !deliveryStatus) {
+      return NextResponse.json(
+        { error: "Provide paymentStatus or deliveryStatus" },
+        { status: 400 },
+      );
+    }
+
+    if (paymentStatus && !PAYMENT_STATUSES.includes(paymentStatus)) {
+      return NextResponse.json(
+        { error: "Invalid payment status" },
+        { status: 400 },
+      );
+    }
+
+    if (deliveryStatus && !DELIVERY_STATUSES.includes(deliveryStatus)) {
+      return NextResponse.json(
+        { error: "Invalid delivery status" },
+        { status: 400 },
+      );
     }
 
     const order = await prisma.order.update({
       where: { id },
-      data: { paymentStatus },
+      data: {
+        ...(paymentStatus ? { paymentStatus } : {}),
+        ...(deliveryStatus ? { deliveryStatus } : {}),
+      },
     });
 
     return NextResponse.json(order);

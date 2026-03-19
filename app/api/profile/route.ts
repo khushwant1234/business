@@ -13,14 +13,13 @@ async function getSessionUser() {
 
 export async function GET() {
   try {
-    const db = prisma as any;
     const user = await getSessionUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const profile = await db.profile.findUnique({
+    const profile = await prisma.profile.findUnique({
       where: { userId: user.id },
       include: {
         addresses: {
@@ -41,14 +40,13 @@ export async function GET() {
 
 export async function POST() {
   try {
-    const db = prisma as any;
     const user = await getSessionUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const profile = await db.profile.upsert({
+    const profile = await prisma.profile.upsert({
       where: { userId: user.id },
       update: {},
       create: { userId: user.id },
@@ -63,7 +61,6 @@ export async function POST() {
 
 export async function PATCH(request: Request) {
   try {
-    const db = prisma as any;
     const user = await getSessionUser();
 
     if (!user) {
@@ -75,7 +72,7 @@ export async function PATCH(request: Request) {
     const phone = typeof body.phone === "string" ? body.phone.trim() : undefined;
     const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl.trim() : undefined;
 
-    const profile = await db.profile.upsert({
+    const profile = await prisma.profile.upsert({
       where: { userId: user.id },
       update: {
         fullName,

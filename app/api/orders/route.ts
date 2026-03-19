@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { PAYMENT_STATUSES } from "@/lib/site";
+import { DELIVERY_STATUSES, PAYMENT_STATUSES } from "@/lib/site";
 
 export async function POST(request: Request) {
   try {
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         address,
         deliveryType,
         paymentStatus: PAYMENT_STATUSES[0],
+        deliveryStatus: DELIVERY_STATUSES[0],
         items: {
           create: items.map((item: { productId: string; quantity: number }) => ({
             productId: item.productId,

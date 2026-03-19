@@ -4,7 +4,12 @@ import ProductsCatalog from "@/components/ProductsCatalog";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const params = await searchParams;
   const products = await prisma.product.findMany({
     orderBy: [{ category: "asc" }, { createdAt: "desc" }],
     select: {
@@ -30,7 +35,11 @@ export default async function ProductsPage() {
         </p>
       </div>
 
-      <ProductsCatalog products={products} categories={[...CATEGORIES]} />
+      <ProductsCatalog
+        products={products}
+        categories={[...CATEGORIES]}
+        initialCategory={params.category}
+      />
     </div>
   );
 }

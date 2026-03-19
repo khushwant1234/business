@@ -7,7 +7,6 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const db = prisma as any;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -17,7 +16,7 @@ export default async function ProfilePage() {
     redirect("/auth/login");
   }
 
-  const profile = await db.profile.findUnique({
+  const profile = await prisma.profile.findUnique({
     where: { userId: user.id },
     include: {
       addresses: {
@@ -26,7 +25,7 @@ export default async function ProfilePage() {
     },
   });
 
-  const orders = await db.order.findMany({
+  const orders = await prisma.order.findMany({
     where: { userId: user.id },
     include: {
       items: {
@@ -37,6 +36,31 @@ export default async function ProfilePage() {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const normalizedAddresses = (profile?.addresses ?? []).map((address) => ({
+    id: address.id,
+    label: address.label,
+    fullName: null,
+    phone: null,
+    country: "India",
+    address: address.address,
+    addressLine2: null,
+    landmark: null,
+    city: address.city,
+    state: null,
+    pinCode: address.pinCode,
+    deliveryInstructions: null,
+    isDefault: address.isDefault,
+  }));
+
+  const normalizedOrders = orders.map((order) => ({
+    ...order,
+    createdAt: order.createdAt.toISOString(),
+    deliveryStatus:
+      "deliveryStatus" in order && typeof order.deliveryStatus === "string"
+        ? order.deliveryStatus
+        : "PROCESSING",
+  }));
 
   return (
     <ProfilePageClient
@@ -50,8 +74,8 @@ export default async function ProfilePage() {
             }
           : null
       }
-      initialAddresses={profile?.addresses ?? []}
-      orders={orders}
+      initialAddresses={normalizedAddresses}
+      orders={normalizedOrders}
     />
   );
 }

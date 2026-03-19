@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -10,24 +9,6 @@ const CYCLE: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="rounded-sm"
-        aria-label="Toggle theme"
-      >
-        <Sun className="size-4" />
-      </Button>
-    );
-  }
 
   const current = (theme as "light" | "dark" | "system") ?? "system";
   const index = CYCLE.indexOf(current);

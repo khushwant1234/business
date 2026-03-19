@@ -15,6 +15,14 @@ export const PRODUCT_CATEGORIES = CATEGORIES.filter(
 
 export const DELIVERY_TYPES = ["EXPRESS", "NORMAL"] as const;
 export const PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED"] as const;
+export const DELIVERY_STATUSES = [
+  "PROCESSING",
+  "PACKED",
+  "DISPATCHED",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "CANCELLED",
+] as const;
 
 export const PAYMENT_DETAILS = {
   accountName: `${BRAND_NAME} Components`,

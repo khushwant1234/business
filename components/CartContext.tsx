@@ -4,8 +4,8 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
+  useEffect,
 } from "react";
 
 export interface CartItem {
@@ -30,23 +30,29 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("cart");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setItems(parsed);
-        } else {
-          localStorage.removeItem("cart");
-        }
-      } catch {
-        localStorage.removeItem("cart");
-      }
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
     }
-  }, []);
+
+    const stored = window.localStorage.getItem("cart");
+    if (!stored) {
+      return [];
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed as CartItem[];
+      }
+
+      window.localStorage.removeItem("cart");
+      return [];
+    } catch {
+      window.localStorage.removeItem("cart");
+      return [];
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(items));

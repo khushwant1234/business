@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { type Resolver, useForm } from "react-hook-form";
+import { z } from "zod/v4";
+import { useForm, useWatch } from "react-hook-form";
 import { Lock, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -92,7 +91,6 @@ export default function RegisterPage() {
   type RegisterValues = z.infer<typeof formSchema>;
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema as any) as Resolver<RegisterValues>,
     defaultValues: {
       email: "",
       password: "",
@@ -100,7 +98,8 @@ export default function RegisterPage() {
     },
   });
 
-  const passwordValue = form.watch("password");
+  const passwordValue =
+    useWatch({ control: form.control, name: "password" }) ?? "";
   const passwordScore = getPasswordScore(passwordValue);
 
   useEffect(() => {
@@ -125,8 +124,26 @@ export default function RegisterPage() {
     }
   }, [form, passwordScore, passwordValue]);
 
-  async function handleSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: RegisterValues) {
     setError(null);
+
+    const validation = formSchema.safeParse(values);
+    if (!validation.success) {
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if (
+          field === "email" ||
+          field === "password" ||
+          field === "confirmPassword"
+        ) {
+          form.setError(field, {
+            type: "manual",
+            message: issue.message,
+          });
+        }
+      }
+      return;
+    }
 
     if (passwordScore <= 1) {
       form.setError("password", {

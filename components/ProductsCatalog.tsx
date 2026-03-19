@@ -16,13 +16,19 @@ type ProductSummary = {
 interface ProductsCatalogProps {
   products: ProductSummary[];
   categories: string[];
+  initialCategory?: string;
 }
 
 export default function ProductsCatalog({
   products,
   categories,
+  initialCategory,
 }: ProductsCatalogProps) {
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState(
+    initialCategory && categories.includes(initialCategory)
+      ? initialCategory
+      : "All",
+  );
 
   const filteredProducts =
     activeCategory === "All"

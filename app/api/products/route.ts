@@ -3,11 +3,23 @@ import { isAdminEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const exclude = searchParams.get("exclude");
+    const limitParam = searchParams.get("limit");
+    const take = limitParam ? Number(limitParam) : undefined;
+
     const products = await prisma.product.findMany({
+      where: {
+        ...(category ? { category } : {}),
+        ...(exclude ? { id: { not: exclude } } : {}),
+      },
+      ...(take && take > 0 ? { take } : {}),
       orderBy: { createdAt: "desc" },
     });
+
     return NextResponse.json(products);
   } catch (error) {
     console.error("Failed to fetch products:", error);
@@ -25,7 +37,25 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, category, description, price, imageUrl } = body;
+    const {
+      name,
+      category,
+      description,
+      price,
+      imageUrl,
+      sku,
+      isInStock,
+      brand,
+      tags,
+      highlights,
+      features,
+      packageIncludes,
+      specifications,
+      attachments,
+      videoUrl,
+      qna,
+      otherInfo,
+    } = body;
 
     if (!name || !category || !description || price == null) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -42,6 +72,18 @@ export async function POST(request: Request) {
         description,
         price: Number(price),
         imageUrl: imageUrl || null,
+        sku: sku || null,
+        isInStock: isInStock ?? true,
+        brand: brand || null,
+        tags: tags ?? null,
+        highlights: highlights ?? null,
+        features: features ?? null,
+        packageIncludes: packageIncludes ?? null,
+        specifications: specifications ?? null,
+        attachments: attachments ?? null,
+        videoUrl: videoUrl || null,
+        qna: qna ?? null,
+        otherInfo: otherInfo ?? null,
       },
     });
 
